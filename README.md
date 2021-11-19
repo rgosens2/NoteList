@@ -1,0 +1,2 @@
+# NoteList
+Musescore plugin
