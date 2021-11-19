@@ -43,7 +43,7 @@ MuseScore {
     	// No. It works now!!!
     	var rc = outfile.write(notelist);
 		if (rc){
-			  msg = "Note list has been saved in " + outfile.source;
+		      msg = "Note list has been saved in " + outfile.source;
 		      console.log(msg);
 		      //txtSaved.text = msg;
 		      return [true, outfile.source];
