@@ -437,18 +437,18 @@ MuseScore {
 		            		
 /*
 pitch	tpc	name	tpc	name	tpc	name
-11	31	A	19	B	7	C
-10	24	A	12	B	0	C
-9	29	G	17	A	5	B
-8	22	G			10	A
-7	27	F	15	G	3	A
-6	32	E	20	F	8	G
-5	25	E	13	F	1	G
-4	30	D	18	E	6	F
-3	23	D	11	E	-1	F
-2	28	C	16	D	4	E
-1	33	B	21	C	9	D
-0	26	B	14	C	2	D	
+11	31	A##	19	B	7	Cb
+10	24	A#	12	Bb	0	Cbb
+9	29	G##	17	A	5	Bbb
+8	22	G#			10	Ab
+7	27	F##	15	G	3	Abb
+6	32	E##	20	F#	8	Gb
+5	25	E#	13	F	1	Gbb
+4	30	D##	18	E	6	Fb
+3	23	D#	11	Eb	-1	Fbb
+2	28	C##	16	D	4	Ebb
+1	33	B##	21	C#	9	Db
+0	26	B#	14	C	2	Dbb	
 */	            		
 		            		
 		            	
