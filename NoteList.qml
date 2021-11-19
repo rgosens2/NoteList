@@ -5,7 +5,7 @@
 //
 //  Show and save a note list of the score
 //
-//  Version 1.0
+//  Version 1.1
 //
 //  Copyright (C) 2021 rgos
 //=============================================================================
@@ -296,6 +296,9 @@ MuseScore {
                     
                     beat = 1 + (t - mm.tick) / mm.ticksB;
                     
+                    
+                    // TODO: round beat to 5 decimals for triplets
+                    beat = +beat.toFixed(5);
                     
                     
                     
@@ -666,7 +669,7 @@ pitch   tpc name    tpc name    tpc name
             TableViewColumn{ role: "duration" ; title: "Duration" ; width: 70 ;resizable: true ; movable: true }
             TableViewColumn{ role: "voice" ; title: "Voice" ; width: 50 ;resizable: true ; movable: true }
             TableViewColumn{ role: "measure" ; title: "Measure" ; width: 70 ; resizable: true ; movable: true  }
-            TableViewColumn{ role: "beat"  ; title: "Beat" ; width: 50 ;resizable: true ; movable: true }
+            TableViewColumn{ role: "beat"  ; title: "Beat" ; width: 70 ;resizable: true ; movable: true }
             TableViewColumn{ role: "staff" ; title: "Staff" ; width: 50 ;resizable: true ; movable: true }
             TableViewColumn{ role: "part" ; title: "Part" ; width: 120 ;resizable: true ; movable: true }
             
