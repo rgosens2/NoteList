@@ -43,7 +43,7 @@ MuseScore {
     	// No. It works now!!!
     	var rc = outfile.write(notelist);
 		if (rc){
-		      msg = "Note list has been saved in " + outfile.source;
+              msg = "Note list has been saved in " + outfile.source;
 		      console.log(msg);
 		      //txtSaved.text = msg;
 		      return [true, outfile.source];
@@ -434,7 +434,24 @@ MuseScore {
 		            				break;
 		            		}
 		            		
-		                      				            	
+		            		
+/*
+pitch	tpc	name	tpc	name	tpc	name
+11	31	A	19	B	7	C
+10	24	A	12	B	0	C
+9	29	G	17	A	5	B
+8	22	G			10	A
+7	27	F	15	G	3	A
+6	32	E	20	F	8	G
+5	25	E	13	F	1	G
+4	30	D	18	E	6	F
+3	23	D	11	E	-1	F
+2	28	C	16	D	4	E
+1	33	B	21	C	9	D
+0	26	B	14	C	2	D	
+*/	            		
+		            		
+		            	
 		            		// get part
 		            		//console.log(cursor.element.staff.part.longName);
 		            		var part = cursor.element.staff.part.longName;
