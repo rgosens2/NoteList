@@ -5,7 +5,7 @@
 //
 //  Show and save a note list of the score
 //
-//  Version 1.1
+//  Version 1.2
 //
 //  Copyright (C) 2021 rgos
 //=============================================================================
@@ -475,7 +475,7 @@ pitch   tpc name    tpc name    tpc name
                                         staff: (s+1),
                                         part: part});
                                         
-                            notelist += ('Note; Pitch: ' + notename + octave + '; Duration: ' + duration + '; Voice: ' + (v+1) + '; Measure: ' + measure + '; Beat: ' + beat + '; Staff: ' + (s+1) + ' (' + part + ')');
+                            notelist += (noteCount + '; Note; Pitch: ' + notename + octave + '; Duration: ' + duration + '; Voice: ' + (v+1) + '; Measure: ' + measure + '; Beat: ' + beat + '; Staff: ' + (s+1) + ' (' + part + ')');
                             notelist += '\n';
                         
                             
