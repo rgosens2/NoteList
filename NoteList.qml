@@ -5,7 +5,7 @@
 //
 //  Show and save a note list of the score
 //
-//  Version 1.2
+//  Version 1.3
 //
 //  Copyright (C) 2021 rgos
 //=============================================================================
@@ -36,13 +36,13 @@ MuseScore {
     // TODO: make QML access a JS var
     // YESS: works now!!! Accessible from QML and JS can manipulate the var    
     property var notelist: ""
-    property var msg: "";
+    property var msg: ""
     
     function saveNotelist() {
         // Still can't access notelist of course. Do we really have to rebuild it here?
         // No. It works now!!!
         var rc = outfile.write(notelist);
-        if (rc){
+        if (rc) {
               msg = "Note list has been saved in " + outfile.source;
               console.log(msg);
               //txtSaved.text = msg;
@@ -543,7 +543,8 @@ pitch   tpc name    tpc name    tpc name
 
         // Write note list to home dir
         // TODO: we actually want to do this from QML with a button but cannot access the JS variable
-        var rc = outfile.write(notelist);
+        // DONE
+        //var rc = outfile.write(notelist);
         
 
         
