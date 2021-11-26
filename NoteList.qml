@@ -3,9 +3,9 @@
 //
 //  Note List Plugin
 //
-//  Show and save a note list of the score
+//  Show and save a note list of the score or a selection
 //
-//  Version 1.3
+//  Version 2.0
 //
 //  Copyright (C) 2021 rgos
 //=============================================================================
@@ -23,7 +23,7 @@ import MuseScore 3.0
 
 
 MuseScore {
-    menuPath: "Plugins.Note List"
+    menuPath: "Plugins.Note List2"
     version: "3.0"
     description: qsTr("Show and save a note list of the score")
     pluginType: "dialog"
@@ -183,13 +183,51 @@ MuseScore {
         // staffCount is OK.
         // If we recreate the cursor it will work.
         
+        var staffBeg = 0;
+		var staffEnd = staffCount;
+        
+        
+        // TEST:
+        if (curScore.selection.startSegment) {
+	        console.log('Sel start: ' + curScore.selection.startSegment.tick);
+	        console.log('Sel end: ' + curScore.selection.endSegment.tick);
+	        
+	        // find staffs of selection
+	        staffBeg = curScore.selection.startStaff;
+	        staffEnd = curScore.selection.endStaff;
+	        console.log('Staff beg: ' + staffBeg);
+	        console.log('Staff end: ' + staffEnd);
+	    }
         
         
         // loop through all staves
-        for (var s = 0; s < staffCount; s++) {
-            cursor = curScore.newCursor(); // recreate to be sure
-            cursor.rewind(0);
-            cursor.staffIdx = s;
+        //for (var s = 0; s < staffCount; s++) {
+        for (var s = staffBeg; s < staffEnd; s++) {
+            //cursor = curScore.newCursor(); // recreate to be sure
+            //cursor.rewind(0);            
+            //cursor.staffIdx = s;          
+            //cursor.voice = 0;
+            // TEST:
+//            if (curScore.selection.startSegment) {
+//            	cursor.rewind(Cursor.SELECTION_START);
+//            } else {
+//            	cursor.rewind(Cursor.SCORE_START);
+//            }
+            // HELL: now staff change does not work. Why?
+            // Cursor rewind is flaky. See: https://musescore.org/en/node/301846
+            // Looks like cursor does not change to the next staff when there is a selection
+            // Yep, confirmed: count-note-beats.qml heeft er ook last van: selecteer twee staves
+            // en de onderste krijgt geen beats.
+            // YESS: we forgot to add a staff indication in the voice loop after a rewind
+            // Also, we do not need the rewind here in the staff loop, only the voice loop
+            // so get rid of all that crap here
+            //cursor.voice = 0;
+            //cursor.staffIdx = s;
+            //cursor.voice = 0;
+            
+            //console.log('s: ' + s)
+            
+           
             
             // restart
             //measure = 1;      
@@ -197,15 +235,57 @@ MuseScore {
             
             // loop through all voices
             for (var v = 0; v < 4; v++) {
-                cursor.rewind(0);
-                cursor.voice = v;               
+                //cursor.rewind(0);
+                // TEST:
+            	//cursor.rewind(Cursor.SELECTION_START); // Fucker does not rewind properly for voice 2 selection!!!
+            	//cursor.rewindToTick(curScore.selection.startSegment.tick); // Hell, still does not rewind
+            	if (curScore.selection.startSegment) {
+	            	cursor.rewind(Cursor.SELECTION_START);
+	            } else {
+	            	cursor.rewind(Cursor.SCORE_START);
+	            }
+            	
+            	
+            	//console.log('t: ' + cursor.tick); // we are not getting the right tick here
+            	
+            	// NOTE NOTE NOTE: After a rewind we always need a voice AND staff indication!!!!!
+            	cursor.staffIdx = s;
+                cursor.voice = v;                
+            	
+            	console.log('s: ' + s);
+            	console.log('v: ' + v);
+            	
+            	
+            	// selection geeft de juiste start en end tick voor voice 2 selection.
+            	// Maar als we rewind doen gaat dat kennelijk op basis van voice 1 en dan wordt niks gevonden
+            	// en pakt ie maar de tick van het eerstvolgende voice 1 segment buiten de selectie.
+            	// En zelfs als we en noot in voice 1 zetten aan begin selectie gaat het ook fout: de cursor
+            	// rewind dan wel correct maar de voice wordt niet opgehoogd.
+            	// Yep, confirmed: als v is opgehoogd zou de cursor naar de volgende voice moeten gaan
+            	// maar hij blijft in voice 1.
+            	// YESS: we must do cursor voice change AFTER rewind
+            	//console.log('v: ' + v)
+            	//console.log( showPos(cursor, measureMap) );
+                               
                 
                 // restart
                 //measure   = 1;        
                 //nextM = m2;
                 
                 // loop through all segments
+                // TEST: with selection
                 while (cursor.segment) {
+                	// TEST: selection
+                	// TODO: make it work when only voice 2 notes are selected
+                	// Het lijkt wel alsof Cursor.SELECTION_START niet goed rewind als er slechts
+                	// noten in voice 2 geselecteerd zijn. Pas als er een noot van voice 1 mee is
+                	// geselecteerd krijgen we de juiste tick.
+                	console.log('ts: ' + cursor.segment.tick);
+                	//console.log('Sel end: ' + curScore.selection.endSegment.tick);
+                	if (curScore.selection.startSegment) {
+                		if (cursor.segment.tick >= curScore.selection.endSegment.tick) break;
+                	}
+                	
                     // TODO: count correctly when measures are full
                     // SHIT: why are we getting 4 different pointers to the first measure?
                     // This causes the 3 times overcount of measures when there are 4 chords in the first measure
@@ -253,7 +333,7 @@ MuseScore {
                     
                     // TEST: find actual time sig
                     // YESS: need cursor.measure
-                    console.log(cursor.measure.timesigActual.numerator + '/' + cursor.measure.timesigActual.denominator);
+                    //console.log(cursor.measure.timesigActual.numerator + '/' + cursor.measure.timesigActual.denominator);
                     
                     // TEST:
                     var m = cursor.measure; 
@@ -262,7 +342,7 @@ MuseScore {
                     var ticksB = division * 4.0 / tsD;
                     var ticksM = ticksB * tsN;
                    
-                    console.log(ticksB + '/' + ticksM);
+                    //console.log(ticksB + '/' + ticksM);
                     
                   
                     
@@ -287,7 +367,7 @@ MuseScore {
                     // opzoeken in welke maat het zich bevindt.
                     // Old method
                     var t = cursor.segment.tick;
-                    console.log(t);
+                    //console.log(t);
                     
                     
                     // Use measure map
@@ -303,7 +383,7 @@ MuseScore {
                     
                     
                     // TEST:
-                    console.log( showPos(cursor, measureMap) );
+                    //console.log( showPos(cursor, measureMap) );
                     
                     
                     
@@ -492,6 +572,7 @@ pitch   tpc name    tpc name    tpc name
                     // step to next segment
                     cursor.next();
                     
+                    
                 } // End while loop segments
                 
                 // rewind for next voice (will do at begin)
@@ -664,17 +745,17 @@ pitch   tpc name    tpc name    tpc name
             height: 200
             //enabled: enabledCheck.checked
 
-            TableViewColumn{ role: "number" ; title: "#" ; width: 50 ; resizable: true ; movable: true  }
-            TableViewColumn{ role: "element" ; title: "Element" ; width: 70 ; resizable: true ; movable: true  }
-            TableViewColumn{ role: "pitch"  ; title: "Pitch" ; width: 50 ;resizable: true ; movable: true }
-            TableViewColumn{ role: "duration" ; title: "Duration" ; width: 70 ;resizable: true ; movable: true }
-            TableViewColumn{ role: "voice" ; title: "Voice" ; width: 50 ;resizable: true ; movable: true }
-            TableViewColumn{ role: "measure" ; title: "Measure" ; width: 70 ; resizable: true ; movable: true  }
-            TableViewColumn{ role: "beat"  ; title: "Beat" ; width: 70 ;resizable: true ; movable: true }
-            TableViewColumn{ role: "staff" ; title: "Staff" ; width: 50 ;resizable: true ; movable: true }
-            TableViewColumn{ role: "part" ; title: "Part" ; width: 120 ;resizable: true ; movable: true }
+            TableViewColumn { role: "number" ; title: "#" ; width: 50 ; resizable: true ; movable: true  }
+            TableViewColumn { role: "element" ; title: "Element" ; width: 70 ; resizable: true ; movable: true  }
+            TableViewColumn { role: "pitch"  ; title: "Pitch" ; width: 50 ;resizable: true ; movable: true }
+            TableViewColumn { role: "duration" ; title: "Duration" ; width: 70 ;resizable: true ; movable: true }
+            TableViewColumn { role: "voice" ; title: "Voice" ; width: 50 ;resizable: true ; movable: true }
+            TableViewColumn { role: "measure" ; title: "Measure" ; width: 70 ; resizable: true ; movable: true  }
+            TableViewColumn { role: "beat"  ; title: "Beat" ; width: 70 ;resizable: true ; movable: true }
+            TableViewColumn { role: "staff" ; title: "Staff" ; width: 50 ;resizable: true ; movable: true }
+            TableViewColumn { role: "part" ; title: "Part" ; width: 120 ;resizable: true ; movable: true }
             
-            model: ListModel{
+            model: ListModel {
                 id: tV
             }
             
@@ -685,17 +766,38 @@ pitch   tpc name    tpc name    tpc name
             alternatingRowColors: true
             backgroundVisible: true
             headerVisible: true
-            itemDelegate: Item {
-                Text {                      
-    //              anchors.verticalCenter: parent.verticalCenter
-    //              color: "blue"
-    //              if (enabledCheck.checked = false)
-    //                        color: "gray"
-    //              enabled: enabledCheck.checked // this causes delay
-    //              elide: styleData.elideMode
-                    text: styleData.value // need this to get text
-                    } // Text
-                } // Item
+            
+            //style: TableViewStyle {
+//	            headerDelegate: Rectangle {
+//	                height: textItem.implicitHeight * 1.2
+//	                width: textItem.implicitWidth
+//	                //color: "lightsteelblue"
+//	                Text {
+//	                    id: textItem
+//	                    anchors.fill: parent
+//	                    verticalAlignment: Text.AlignVCenter
+//	                    horizontalAlignment: styleData.textAlignment
+//	                    anchors.leftMargin: 12
+//	                    text: styleData.value
+//	                    elide: Text.ElideRight
+//	                    color: textColor
+//	                    renderType: Text.NativeRendering
+//	                }
+//	            }
+	            itemDelegate: Item {
+	                Text {
+	                    //id: textItem
+	                    anchors.fill: parent
+	                    //verticalAlignment: Text.AlignVCenter
+	                    //horizontalAlignment: styleData.textAlignment
+	                    anchors.leftMargin: 5
+	                    text: styleData.value
+	                    //elide: Text.ElideRight
+	                    //color: textColor
+	                    //renderType: Text.NativeRendering
+	                }
+	        	} // Item
+	        //}
         }// TableView
         
         
