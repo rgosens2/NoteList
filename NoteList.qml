@@ -198,16 +198,16 @@ MuseScore {
             cursor.staffIdx = 0;
             cursor.voice = 0;
             if (!cursor.tick) {
-				/*
-				 * This happens when the selection goes to the
-				 * end of the scorerewind() jumps behind the
-				 * last segment, setting tick = 0.
-				 */
-				toEOF = true;
-			} else {
-				toEOF = false;
-				tickEnd = cursor.tick;
-			}
+                /*
+                 * This happens when the selection goes to the
+                 * end of the scorerewind() jumps behind the
+                 * last segment, setting tick = 0.
+                 */
+                toEOF = true;
+            } else {
+                toEOF = false;
+                tickEnd = cursor.tick;
+            }
             
             // find staffs of selection
             staffBeg = curScore.selection.startStaff;
