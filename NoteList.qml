@@ -183,14 +183,31 @@ MuseScore {
         // staffCount is OK.
         // If we recreate the cursor it will work.
         
+       
         var staffBeg = 0;
         var staffEnd = staffCount;
+        var tickEnd = 0;
+        var toEOF = true;
         
         
-        // TEST:
+        // TEST: We have a selection
         if (curScore.selection.startSegment) {
             console.log('Sel start: ' + curScore.selection.startSegment.tick);
-            console.log('Sel end: ' + curScore.selection.endSegment.tick);
+            //console.log('Sel end: ' + curScore.selection.endSegment.tick);
+            cursor.rewind(Cursor.SELECTION_END);
+            cursor.staffIdx = 0;
+            cursor.voice = 0;
+            if (!cursor.tick) {
+				/*
+				 * This happens when the selection goes to the
+				 * end of the scorerewind() jumps behind the
+				 * last segment, setting tick = 0.
+				 */
+				toEOF = true;
+			} else {
+				toEOF = false;
+				tickEnd = cursor.tick;
+			}
             
             // find staffs of selection
             staffBeg = curScore.selection.startStaff;
@@ -208,11 +225,11 @@ MuseScore {
             //cursor.staffIdx = s;          
             //cursor.voice = 0;
             // TEST:
-//            if (curScore.selection.startSegment) {
-//              cursor.rewind(Cursor.SELECTION_START);
-//            } else {
-//              cursor.rewind(Cursor.SCORE_START);
-//            }
+            if (curScore.selection.startSegment) {
+              cursor.rewind(Cursor.SELECTION_START);
+            } else {
+              cursor.rewind(Cursor.SCORE_START);
+            }
             // HELL: now staff change does not work. Why?
             // Cursor rewind is flaky. See: https://musescore.org/en/node/301846
             // Looks like cursor does not change to the next staff when there is a selection
@@ -221,9 +238,11 @@ MuseScore {
             // YESS: we forgot to add a staff indication in the voice loop after a rewind
             // Also, we do not need the rewind here in the staff loop, only the voice loop
             // so get rid of all that crap here
+            // Well, we do need to rewind here or we will not find the last staff when there is
+            // no selection
             //cursor.voice = 0;
-            //cursor.staffIdx = s;
-            //cursor.voice = 0;
+            cursor.staffIdx = s;
+            cursor.voice = 0;
             
             //console.log('s: ' + s)
             
@@ -245,6 +264,9 @@ MuseScore {
                     cursor.rewind(Cursor.SCORE_START);
                 }
                 
+                //console.log(curScore.selection.startSegment);
+                
+                
                 
                 //console.log('t: ' + cursor.tick); // we are not getting the right tick here
                 
@@ -254,6 +276,13 @@ MuseScore {
                 
                 console.log('s: ' + s);
                 console.log('v: ' + v);
+                
+                
+                // TODO: 
+                // * select All gives no output. Probably because of end measure overshoot. Fix it.
+                // DONE: use toEOF to account for selection to end of score
+                // * no select does not see all staffs. Fix it.               
+                // DONE: rewind in staff loop
                 
                 
                 // selection geeft de juiste start en end tick voor voice 2 selection.
@@ -274,17 +303,20 @@ MuseScore {
                 
                 // loop through all segments
                 // TEST: with selection
-                while (cursor.segment) {
+                //while (cursor.segment) {
+                while (cursor.segment && (toEOF || cursor.tick < tickEnd)) {
                     // TEST: selection
                     // TODO: make it work when only voice 2 notes are selected
                     // Het lijkt wel alsof Cursor.SELECTION_START niet goed rewind als er slechts
                     // noten in voice 2 geselecteerd zijn. Pas als er een noot van voice 1 mee is
                     // geselecteerd krijgen we de juiste tick.
                     console.log('ts: ' + cursor.segment.tick);
+                    console.log('tickEnd: ' + tickEnd);
                     //console.log('Sel end: ' + curScore.selection.endSegment.tick);
-                    if (curScore.selection.startSegment) {
-                        if (cursor.segment.tick >= curScore.selection.endSegment.tick) break;
-                    }
+//                    if (curScore.selection.startSegment) {
+//                        //if (cursor.segment.tick >= curScore.selection.endSegment.tick) break;
+//                        if (cursor.segment.tick >= tickEnd) break;
+//                    }
                     
                     // TODO: count correctly when measures are full
                     // SHIT: why are we getting 4 different pointers to the first measure?
