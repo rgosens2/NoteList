@@ -28,16 +28,16 @@ MuseScore {
     description: qsTr("Show and save a note list of the score or a selection")
     pluginType: "dialog"
     requiresScore: true
-    
-    
+
+
     /////////////////
     // JS global var for access in QML
     // Alas QML does not use the variable that JS has changed
     // TODO: make QML access a JS var
-    // YESS: works now!!! Accessible from QML and JS can manipulate the var    
+    // YESS: works now!!! Accessible from QML and JS can manipulate the var
     property var notelist: ""
     property var msg: ""
-    
+
     function saveNotelist() {
         // Still can't access notelist of course. Do we really have to rebuild it here?
         // No. It works now!!!
@@ -59,8 +59,8 @@ MuseScore {
               return [false, outfile.source];
         }
     }
-    
-    
+
+
     /////////////////
     // TODO: gaat fout met opmaat: er wordt tweemaal measure 1 geteld
     // NOTE: let op dat de maatnummering bij een opmaat/pickup telt vanaf de eerste hele maat maar dat Ms
@@ -77,7 +77,7 @@ MuseScore {
             var tsN = m.timesigActual.numerator;
             var ticksB = division * 4.0 / tsD;
             var ticksM = ticksB * tsN;
-            //no += m.noOffset;         
+            //no += m.noOffset;
             var cur = {
                 "tick": tick,
                 "tsD": tsD,
@@ -97,7 +97,7 @@ MuseScore {
         }
         return map;
     }
-    
+
     function showPos(cursor, measureMap) {
         var t = cursor.segment.tick;
         var m = measureMap[cursor.measure.firstSegment.tick];
@@ -105,49 +105,49 @@ MuseScore {
         if (m && t >= m.tick && t < m.past) {
             b = 1 + (t - m.tick) / m.ticksB;
         }
-    
+
         return "St: " + (cursor.staffIdx + 1) +
             " Vc: " + (cursor.voice + 1) +
             " Ms: " + m.no + " Bt: " + b;
-    }       
+    }
     ////////////////////
 
 
-    
+
     onRun: {
         if (!curScore) {
             console.log(qsTranslate("QMessageBox", "No score open.\nThis plugin requires an open score to run.\n"));
             Qt.quit();
         }
-        
-        
+
+
         // TODO: make accessible from QML
         //var notelist = '';
-        
-        
+
+
         // RG: why do we have to start at -3 to get the correct number of measures?
         // It is because we loop through segments and we had 4 notes in the first measure
         // It only works when measures are empty.
         var internalMeasureNumber = 1; //we will use this to track the current measure number
         //var currentMeasure = null; //we use this to keep a reference to the actual measure, so we can know when it changes
-        
+
         var chordCount = 0;
         var noteCount = 0;
-        
-        var noteCountC = 0;        
+
+        var noteCountC = 0;
         var noteLengthC = 0;
-        var noteCountCis = 0;        
+        var noteCountCis = 0;
         var noteLengthCis = 0;
-        
+
         var measureCount = 0;
         measureCount = curScore.nmeasures;
-        
+
         var staffCount = 0;
         staffCount = curScore.nstaves;
-        
+
         var partCount = 0;
         partCount = curScore.parts.length;
-        
+
         // for selection
         var measureCount2 = 0;
         var staffCount2 = 0;
@@ -159,43 +159,43 @@ MuseScore {
         cursor.rewind(0);
         cursor.voice = 0;
         cursor.staffIdx = 0;
-        
-        
+
+
         var measure = 1;
         var beat = 1;
-        
+
         //var tickCount = 0;
-        
-        
-        
+
+
+
         // find ticks for measure 2
         var m2 = cursor.measure.nextMeasure.firstSegment.tick;
-        console.log('m2: ' + m2); 
-        
+        console.log('m2: ' + m2);
+
         var nextM = m2;
-        
-        
+
+
         var measureMap = buildMeasureMap(curScore);
-    
-        
-          
-            
+
+
+
+
         // TODO: loop through all staves
         // NOTE: when staves are made invisible they are still counted: check for visibility
-        
-        
+
+
         // HELL: we can only loop through 2 staves. Why?
         // Works OK with Ligeti but not our Test1 file.
         // staffCount is OK.
         // If we recreate the cursor it will work.
-        
-       
+
+
         var staffBeg = 0;
         var staffEnd = staffCount;
         var tickEnd = 0;
         var toEOF = true;
-        
-        
+
+
         // TEST: We have a selection
         if (curScore.selection.startSegment) {
             console.log('Sel start: ' + curScore.selection.startSegment.tick);
@@ -214,17 +214,17 @@ MuseScore {
                 toEOF = false;
                 tickEnd = cursor.tick;
             }
-            
+
             // find staffs of selection
             staffBeg = curScore.selection.startStaff;
             staffEnd = curScore.selection.endStaff;
             console.log('Staff beg: ' + staffBeg);
             console.log('Staff end: ' + staffEnd);
-            
-            
+
+
             // TODO: find the correct number of measures, staves and parts for a selection
             staffCount2 = staffEnd - staffBeg;
-            
+
             //var mstart = measureMap[curScore.selection.startSegment.tick];
             //var mend = measureMap[curScore.selection.endSegment.tick];
             //measureCount = mend.no - mstart.no;
@@ -239,7 +239,7 @@ MuseScore {
             cursor.voice = 0;
             // Use measure map
             var mstart = measureMap[cursor.measure.firstSegment.tick];
-            
+
             cursor.rewind(Cursor.SELECTION_END);
             cursor.staffIdx = curScore.selection.endStaff;
             cursor.voice = 0;
@@ -247,27 +247,27 @@ MuseScore {
             // SHIT: cursor.measure null when select All
             // HACK:
             if (toEOF) {
-            	measureCount2 = measureCount;
+                measureCount2 = measureCount;
             } else {
-            	var mend = measureMap[cursor.measure.firstSegment.tick];
-            	measureCount2 = (mend.no - mstart.no) + 1;
+                var mend = measureMap[cursor.measure.firstSegment.tick];
+                measureCount2 = (mend.no - mstart.no) + 1;
             }
-                   
+
 
         }
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
         // loop through all staves
         //for (var s = 0; s < staffCount; s++) {
         for (var s = staffBeg; s < staffEnd; s++) {
             //cursor = curScore.newCursor(); // recreate to be sure
-            //cursor.rewind(0);            
-            //cursor.staffIdx = s;          
+            //cursor.rewind(0);
+            //cursor.staffIdx = s;
             //cursor.voice = 0;
             // TEST:
             if (curScore.selection.startSegment) {
@@ -288,15 +288,15 @@ MuseScore {
             //cursor.voice = 0;
             cursor.staffIdx = s;
             cursor.voice = 0;
-            
+
             //console.log('s: ' + s)
-            
-           
-            
+
+
+
             // restart
-            //measure = 1;      
+            //measure = 1;
             //nextM = m2;
-            
+
             // loop through all voices
             for (var v = 0; v < 4; v++) {
                 //cursor.rewind(0);
@@ -308,28 +308,28 @@ MuseScore {
                 } else {
                     cursor.rewind(Cursor.SCORE_START);
                 }
-                
+
                 //console.log(curScore.selection.startSegment);
-                
-                
-                
+
+
+
                 //console.log('t: ' + cursor.tick); // we are not getting the right tick here
-                
+
                 // NOTE NOTE NOTE: After a rewind we always need a voice AND staff indication!!!!!
                 cursor.staffIdx = s;
-                cursor.voice = v;                
-                
+                cursor.voice = v;
+
                 console.log('s: ' + s);
                 console.log('v: ' + v);
-                
-                
-                // TODO: 
+
+
+                // TODO:
                 // * select All gives no output. Probably because of end measure overshoot. Fix it.
                 // DONE: use toEOF to account for selection to end of score
-                // * no select does not see all staffs. Fix it.               
+                // * no select does not see all staffs. Fix it.
                 // DONE: rewind in staff loop
-                
-                
+
+
                 // selection geeft de juiste start en end tick voor voice 2 selection.
                 // Maar als we rewind doen gaat dat kennelijk op basis van voice 1 en dan wordt niks gevonden
                 // en pakt ie maar de tick van het eerstvolgende voice 1 segment buiten de selectie.
@@ -340,12 +340,12 @@ MuseScore {
                 // YESS: we must do cursor voice change AFTER rewind
                 //console.log('v: ' + v)
                 //console.log( showPos(cursor, measureMap) );
-                               
-                
+
+
                 // restart
-                //measure   = 1;        
+                //measure   = 1;
                 //nextM = m2;
-                
+
                 // loop through all segments
                 // TEST: with selection
                 //while (cursor.segment) {
@@ -362,14 +362,14 @@ MuseScore {
 //                        //if (cursor.segment.tick >= curScore.selection.endSegment.tick) break;
 //                        if (cursor.segment.tick >= tickEnd) break;
 //                    }
-                    
+
                     // TODO: count correctly when measures are full
                     // SHIT: why are we getting 4 different pointers to the first measure?
                     // This causes the 3 times overcount of measures when there are 4 chords in the first measure
                     //console.log(cursor.measure);
                     // We should just use:
                     //measureCount = curScore.nmeasures;
-                    
+
                     // NONO:
         //            if (cursor.measure != currentMeasure) {
         //                 //we moved into a new measure
@@ -377,18 +377,18 @@ MuseScore {
         //                 // even when in the same measure!!! Sucks!!!
         //                 internalMeasureNumber++;
         //                 currentMeasure = cursor.measure;
-        //                 
+        //
         //                 // LOOK: how nasty
         //                 console.log(cursor.measure);
-        //                 
+        //
         //                 // TODO: find a way to count measures correctly in a loop
         //            }
-        
-                    
+
+
                     // TODO: list all notes as in the Musescore status bar:
                     // Note; Pitch: C6; Duration: Quarter; Voice: 1; Measure: 1; Beat: 1; Staff: 1 (Piano)
-                  
-                  
+
+
                     // TODO: get instrument name
                     // MS uses Part.longName in the status bar
                     //console.log(cursor.part.longName);
@@ -407,29 +407,29 @@ MuseScore {
                     //console.log(curScore.staves.length); // cannot read property of undefined
                     // YESS: can get staff via element
                     // cursor.element.staff.part.longName
-                    
+
                     // TEST: find actual time sig
                     // YESS: need cursor.measure
                     //console.log(cursor.measure.timesigActual.numerator + '/' + cursor.measure.timesigActual.denominator);
-                    
+
                     // TEST:
-                    var m = cursor.measure; 
+                    var m = cursor.measure;
                     var tsD = m.timesigActual.denominator;
                     var tsN = m.timesigActual.numerator;
                     var ticksB = division * 4.0 / tsD;
                     var ticksM = ticksB * tsN;
-                   
+
                     //console.log(ticksB + '/' + ticksM);
-                    
-                  
-                    
-                  
-                    
+
+
+
+
+
                     // we are looping through segments, can we find the proper measure and beat without
                     // first constructing a measure map?
                     //var t = cursor.tick;
-                    
-                    
+
+
                     // YESS: it can be done like this
                     // TODO: find a way to find the initial nextM
                     // DONE
@@ -445,52 +445,52 @@ MuseScore {
                     // Old method
                     var t = cursor.segment.tick;
                     //console.log(t);
-                    
-                    
+
+
                     // Use measure map
                     var mm = measureMap[cursor.measure.firstSegment.tick];
                     measure = mm.no;
-                    
+
                     beat = 1 + (t - mm.tick) / mm.ticksB;
-                    
-                    
+
+
                     // TODO: round beat to 5 decimals for triplets
                     beat = +beat.toFixed(5);
-                    
-                    
-                    
+
+
+
                     // TEST:
                     //console.log( showPos(cursor, measureMap) );
-                    
-                    
-                    
-                           
-					// TEST: part count for selection
-					if (curScore.selection.startSegment) {
-						if (cursor.element && !cursor.element.staff.part.is(oldPart)) {
-							partCount2++;
-						    oldPart = cursor.element.staff.part;
-						}
-						//console.log('Part: ' + cursor.element.staff.part.is(cursor.element.staff.part));
-						console.log('Part Count: ' + partCount2);
-					}
-					                            
-                    
-                    
-                    
-                    
+
+
+
+
+                    // TEST: part count for selection
+                    if (curScore.selection.startSegment) {
+                        if (cursor.element && !cursor.element.staff.part.is(oldPart)) {
+                            partCount2++;
+                            oldPart = cursor.element.staff.part;
+                        }
+                        //console.log('Part: ' + cursor.element.staff.part.is(cursor.element.staff.part));
+                        console.log('Part Count: ' + partCount2);
+                    }
+
+
+
+
+
                     // TEST: count notes
                     if (cursor.element && cursor.element.type == Element.CHORD) {
                         chordCount++;
                         //noteCount += cursor.element.notes.length;
-                        
+
                         //console.log('Chords: ' + chordCount);
                         //console.log('Notes: ' + noteCount);
-                        
+
                         // TEST: print measure number
                         //console.log( 'Measure: ' + ( Math.floor(cursor.tick/1920) + 1) );
                         //console.log( 'Beat: ' + (((cursor.tick/480)%4) + 1) );
-                        
+
                         // TODO: 1920 for measure and 480 for beat are for quarter note
                         // Make universal and make sure it works with unregular measures
                         // and pickup measures
@@ -500,51 +500,51 @@ MuseScore {
                         // Use cursor.element.timesigActual
                         //var measure = Math.floor(cursor.tick/1920) + 1;
                         //var beat = (cursor.tick/480)%4 + 1;
-                        
-                        
-                        
-                        
+
+
+
+
                         // get note duration
                         var duration = cursor.element.duration.str;
-                   
-                        
+
+
                         // TODO: get all the notes in a chord
                         // DONE
                         //console.log(cursor.element.notes.CountFunction);
                         //console.log( cursor.element.notes.length );
-                        
+
                         // TODO: loop through all notes in a chord and count the pitches
                         for (var i = 0; i < cursor.element.notes.length; i++) {
                             noteCount++;
-                            
+
                             // TEST:
                             switch (cursor.element.notes[i].tpc) {
                                 case 14:
                                 case 26:
                                 case 2:
-                                    noteCountC++; 
-                                    noteLengthC += cursor.element.duration.ticks;                           
+                                    noteCountC++;
+                                    noteLengthC += cursor.element.duration.ticks;
                                     // TEST: print note and length and voice
-                                    //console.log('Voice: ' + (v+1) + ' Note: C' + ' ' + cursor.element.duration.str); 
+                                    //console.log('Voice: ' + (v+1) + ' Note: C' + ' ' + cursor.element.duration.str);
                                     //console.log('Note; Pitch: C; Duration: ' + duration + '; Voice: ' + (v+1) + '; Measure: ' + measure +'; Beat: ' + beat + '; Staff 1');
                                     break;
                                 case 21:
                                 case 33:
                                 case 9:
-                                    noteCountCis++; 
+                                    noteCountCis++;
                                     noteLengthCis += cursor.element.duration.ticks;
                                     // TEST: print note and length and voice
-                                    //console.log('Voice: ' + (v+1) + ' Note: C#/Db' + ' ' + cursor.element.duration.str); 
+                                    //console.log('Voice: ' + (v+1) + ' Note: C#/Db' + ' ' + cursor.element.duration.str);
                                     //console.log('Note; Pitch: C#/Db; Duration: ' + duration + '; Voice: ' + (v+1) + '; Measure: ' + measure +'; Beat: ' + beat + '; Staff 1');
                                     break;
                             }
-                            
+
                             var pitch = cursor.element.notes[i].pitch;
                             var tpc   = cursor.element.notes[i].tpc;
-                            
+
                             var octave = Math.floor(pitch/12)-1;
                             var notename = '';
-                            
+
                             switch (pitch%12) {
                                 case 0:
                                     if (tpc == 26) notename ='B#';
@@ -607,8 +607,8 @@ MuseScore {
                                     if (tpc == 7 ) notename ='Cb';
                                     break;
                             }
-                            
-                            
+
+
 /*
 pitch   tpc name    tpc name    tpc name
 11  31  A## 19  B   7   Cb
@@ -622,21 +622,21 @@ pitch   tpc name    tpc name    tpc name
 3   23  D#  11  Eb  -1  Fbb
 2   28  C## 16  D   4   Ebb
 1   33  B## 21  C#  9   Db
-0   26  B#  14  C   2   Dbb 
-*/                      
-                            
-                        
+0   26  B#  14  C   2   Dbb
+*/
+
+
                             // get part
                             var part = cursor.element.staff.part.longName;
-                            
-                     
-    
+
+
+
                             // TODO: print correct notename using tpc and pitch
-                            // DONE                 
+                            // DONE
                             //console.log(notename + octave);
                             console.log('Note; Pitch: ' + notename + octave + '; Duration: ' + duration + '; Voice: ' + (v+1) + '; Measure: ' + measure + '; Beat: ' + beat + '; Staff: ' + (s+1) + ' (' + part + ')');
-    
-    
+
+
                             tV.append({ number: noteCount,
                                         element: 'Note',
                                         pitch: notename + octave,
@@ -646,39 +646,39 @@ pitch   tpc name    tpc name    tpc name
                                         beat: beat,
                                         staff: (s+1),
                                         part: part});
-                                        
+
                             notelist += (noteCount + '; Note; Pitch: ' + notename + octave + '; Duration: ' + duration + '; Voice: ' + (v+1) + '; Measure: ' + measure + '; Beat: ' + beat + '; Staff: ' + (s+1) + ' (' + part + ')');
                             notelist += '\n';
-                        
-                            
+
+
                         } // End note loop
-                        
-        
+
+
                         // TEST: get duration of note
-                        //console.log('Length: ' + cursor.element.duration.ticks); 
-                        
+                        //console.log('Length: ' + cursor.element.duration.ticks);
+
                         //console.log(noteCount);
-                        
+
                     } // End chord loop
-                    
+
                     // step to next segment
                     cursor.next();
-                    
-                    
+
+
                 } // End while loop segments
-                
+
                 // rewind for next voice (will do at begin)
                 //cursor.rewind(0);
-                
+
             } // End voice loop
-            
+
             // rewind cursor for next staff (not necessary)
             //cursor.rewind(0);
-            
+
         } // End staff loop
-        
-        
-        
+
+
+
         // TEST: Count number of measures with cursor loop
         // Why does it no longer work since we added voice count?
         // DONE: it works again with a new cursor. Why can't we use the old one?
@@ -688,39 +688,39 @@ pitch   tpc name    tpc name    tpc name
         cursor2.staffIdx = 0;
         while ( cursor2.nextMeasure() ) {
             internalMeasureNumber++;
-            //console.log('M');             
+            //console.log('M');
         }
-        
-        
+
+
         // NONO: this will overcount when measures contain notes
         // DONE: its correct now
         console.log('Measures: ' + internalMeasureNumber);
         //Qt.quit();
-        
-        
+
+
         // List counts
         if (curScore.selection.startSegment) {
-        	helloQml0.text = 'Selection';
-        	helloQml1.text = 'Found ' + measureCount2 + ' measures.';
-	        helloQml2.text = 'Found ' + noteCount + ' notes.'; // is OK       
-	        helloQml3.text = 'Found ' + staffCount2 + ' staves.';
-	        helloQml4.text = 'Found ' + partCount2 + ' parts.';
+            helloQml0.text = 'Selection';
+            helloQml1.text = 'Found ' + measureCount2 + ' measures.';
+            helloQml2.text = 'Found ' + noteCount + ' notes.'; // is OK
+            helloQml3.text = 'Found ' + staffCount2 + ' staves.';
+            helloQml4.text = 'Found ' + partCount2 + ' parts.';
         } else {
-        	helloQml0.text = 'Score';
-        	helloQml1.text = 'Found ' + measureCount + ' measures.';
-	        helloQml2.text = 'Found ' + noteCount + ' notes.';        
-	        helloQml3.text = 'Found ' + staffCount + ' staves.';
-	        helloQml4.text = 'Found ' + partCount + ' parts.';
+            helloQml0.text = 'Score';
+            helloQml1.text = 'Found ' + measureCount + ' measures.';
+            helloQml2.text = 'Found ' + noteCount + ' notes.';
+            helloQml3.text = 'Found ' + staffCount + ' staves.';
+            helloQml4.text = 'Found ' + partCount + ' parts.';
         }
-        
-       
-       
-        
+
+
+
+
         // list notes
 //        helloQmlC.text =   '\t' + noteCountC   + '\t' + noteLengthC/480;
 //        helloQmlCis.text = '\t' + noteCountCis + '\t' + noteLengthCis/480;
-        
-        
+
+
         // TEST: fill table YESS
 //        tV.append({title: "some value",
 //                           author: "Another value",
@@ -731,29 +731,29 @@ pitch   tpc name    tpc name    tpc name
         // TODO: we actually want to do this from QML with a button but cannot access the JS variable
         // DONE
         //var rc = outfile.write(notelist);
-        
 
-        
+
+
     }
-    
-    
+
+
     ////////////////////////////////////////////////////
     FileIO {
         id: outfile
         source: homePath() + "/" + curScore.scoreName + "_notelist.csv"
         onError: console.log(msg)
     }
-    
-    
+
+
     width:  700
     height: 475
-    
+
     Rectangle {
         //id: myRect
         //color: "blue"
         //anchors.fill: parent
         //anchors.margins: 10
-        
+
         Text {
             id: helloQml0
             //anchors.centerIn: parent
@@ -762,21 +762,21 @@ pitch   tpc name    tpc name    tpc name
             text: qsTr("Hello Qml")
             font.bold: true
         }
-        
+
         Rectangle {
             color: "grey"
             //anchors.horizontalCenter: parent.horizontalCenter
             height: 1
-            width: 660          
+            width: 660
             x: 20
             y: 40
         }
-        
+
         Rectangle {
             color: "white"
             //anchors.horizontalCenter: parent.horizontalCenter
             height: 1
-            width: 660          
+            width: 660
             x: 20
             y: 41
         }
@@ -788,7 +788,7 @@ pitch   tpc name    tpc name    tpc name
             y: 50
             text: qsTr("Hello Qml")
         }
-        
+
         Text {
             id: helloQml2
             //anchors.centerIn: parent
@@ -796,7 +796,7 @@ pitch   tpc name    tpc name    tpc name
             y: 70
             text: qsTr("Hello Qml")
         }
-        
+
         Text {
             id: helloQml3
             //anchors.centerIn: parent
@@ -804,7 +804,7 @@ pitch   tpc name    tpc name    tpc name
             y: 90
             text: qsTr("Hello Qml")
         }
-        
+
         Text {
             id: helloQml4
             //anchors.centerIn: parent
@@ -812,7 +812,7 @@ pitch   tpc name    tpc name    tpc name
             y: 110
             text: qsTr("Hello Qml")
         }
-        
+
 //        Rectangle {
 //          color: "grey"
 //          //anchors.horizontalCenter: parent.horizontalCenter
@@ -821,14 +821,14 @@ pitch   tpc name    tpc name    tpc name
 //          y: 10
 //          x: 25
 //        }
-//        
+//
 //        Label {
 //            x: 20
 //            y: 70
 //            text: qsTr("C")
 //            font.bold: true
 //        }
-//        
+//
 //        Text {
 //          id: helloQmlC
 //            //anchors.centerIn: parent
@@ -836,14 +836,14 @@ pitch   tpc name    tpc name    tpc name
 //            y: 70
 //            text: qsTr("Hello Qml")
 //        }
-//        
+//
 //        Label {
 //            x: 20
 //            y: 90
 //            text: qsTr("C#/Db")
 //            font.bold: true
 //        }
-//        
+//
 //        Text {
 //          id: helloQmlCis
 //            //anchors.centerIn: parent
@@ -851,9 +851,9 @@ pitch   tpc name    tpc name    tpc name
 //            y: 90
 //            text: qsTr("Hello Qml")
 //        }
-        
-        
-        
+
+
+
 //        ListModel {
 //          ListElement {
 //              name: "Bill Smith"
@@ -868,8 +868,8 @@ pitch   tpc name    tpc name    tpc name
 //              number: "555 0473"
 //          }
 //      }
-        
-        
+
+
         TableView {
             x: 20
             y: 170
@@ -886,19 +886,19 @@ pitch   tpc name    tpc name    tpc name
             TableViewColumn { role: "beat"  ; title: "Beat" ; width: 70 ;resizable: true ; movable: true }
             TableViewColumn { role: "staff" ; title: "Staff" ; width: 50 ;resizable: true ; movable: true }
             TableViewColumn { role: "part" ; title: "Part" ; width: 120 ;resizable: true ; movable: true }
-            
+
             model: ListModel {
                 id: tV
             }
-            
+
 
             // TODO: sorting when clicking column headers
             //sortingEnabled: true
-            
+
             alternatingRowColors: true
             backgroundVisible: true
             headerVisible: true
-            
+
             //style: TableViewStyle {
 //              headerDelegate: Rectangle {
 //                  height: textItem.implicitHeight * 1.2
@@ -931,10 +931,10 @@ pitch   tpc name    tpc name    tpc name
                 } // Item
             //}
         }// TableView
-        
-        
-        
-        
+
+
+
+
 
 //        MouseArea {
 //            anchors.fill: parent
@@ -976,15 +976,15 @@ pitch   tpc name    tpc name    tpc name
             //anchors.right: parent.right
             //anchors.bottom: parent.bottom
             //anchors.rightMargin: 20
-            //anchors.bottomMargin: 20 
+            //anchors.bottomMargin: 20
             x: 20
             y: 400
-            
+
             text: qsTranslate("PrefsDialogBase", "Save .csv")
             onClicked: {
                 // Save notelist
                 var ret = saveNotelist()
-                if ( ret[0] == true ) {             
+                if ( ret[0] == true ) {
                     // Show message
                     messageDialog.icon = StandardIcon.Information
                     messageDialog.title = qsTr("Test")
@@ -992,17 +992,17 @@ pitch   tpc name    tpc name    tpc name
                 } else {
                     messageDialog.icon = StandardIcon.Critical
                     messageDialog.title = qsTr("Test")
-                    messageDialog.text = qsTr("Could not save " + ret[1])                   
+                    messageDialog.text = qsTr("Could not save " + ret[1])
                 }
-                
+
                 //messageDialog.onAccepted: {
                 //}
-                
+
                 messageDialog.visible = true
                 //Qt.quit()
             }
         }
-        
+
         Button {
             id: doneButton
             //Layout.columnSpan: 3
@@ -1011,10 +1011,10 @@ pitch   tpc name    tpc name    tpc name
             //anchors.right: parent.right
             //anchors.bottom: parent.bottom
             //anchors.rightMargin: 20
-            //anchors.bottomMargin: 20 
+            //anchors.bottomMargin: 20
             x: 600
             y: 430
-            
+
             text: qsTranslate("PrefsDialogBase", "Done")
             onClicked: {
                 //pluginId.parent.Window.window.close();
