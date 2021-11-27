@@ -5,7 +5,7 @@
 //
 //  Show and save a note list of the score or a selection
 //
-//  Version 2.0
+//  Version 2.1
 //
 //  Copyright (C) 2021 rgos
 //=============================================================================
@@ -23,9 +23,9 @@ import MuseScore 3.0
 
 
 MuseScore {
-    menuPath: "Plugins.Note List2"
+    menuPath: "Plugins.Note List"
     version: "3.0"
-    description: qsTr("Show and save a note list of the score")
+    description: qsTr("Show and save a note list of the score or a selection")
     pluginType: "dialog"
     requiresScore: true
     
@@ -147,6 +147,12 @@ MuseScore {
         
         var partCount = 0;
         partCount = curScore.parts.length;
+        
+        // for selection
+        var measureCount2 = 0;
+        var staffCount2 = 0;
+        var partCount2 = 0;
+        var oldPart = 0;
 
         //get a cursor to be able to run over the score
         var cursor = curScore.newCursor();
@@ -214,7 +220,40 @@ MuseScore {
             staffEnd = curScore.selection.endStaff;
             console.log('Staff beg: ' + staffBeg);
             console.log('Staff end: ' + staffEnd);
+            
+            
+            // TODO: find the correct number of measures, staves and parts for a selection
+            staffCount2 = staffEnd - staffBeg;
+            
+            //var mstart = measureMap[curScore.selection.startSegment.tick];
+            //var mend = measureMap[curScore.selection.endSegment.tick];
+            //measureCount = mend.no - mstart.no;
+            // Jammer: Cannot read property 'no' of undefined
+            // Als we een een deel van een voorgaande measure selecteren dan staat voor die tick
+            // de measure niet in de measuremap (die bevat alleen de begin tick van measures).
+            // Hoe op te lossen?
+            // We kunnen in de notelist de hoogste en laagste measure vinden en die gebruiken.
+            // Of zo:
+            cursor.rewind(Cursor.SELECTION_START);
+            cursor.staffIdx = curScore.selection.startStaff;
+            cursor.voice = 0;
+            // Use measure map
+            var mstart = measureMap[cursor.measure.firstSegment.tick];
+            
+            cursor.rewind(Cursor.SELECTION_END);
+            cursor.staffIdx = curScore.selection.endStaff;
+            cursor.voice = 0;
+            // Use measure map
+            var mend = measureMap[cursor.measure.firstSegment.tick];
+            
+            measureCount2 = (mend.no - mstart.no) + 1;
+
         }
+        
+        
+        
+        
+        
         
         
         // loop through all staves
@@ -419,6 +458,20 @@ MuseScore {
                     
                     
                     
+                           
+					// TEST: part count for selection
+					if (curScore.selection.startSegment) {
+						if (cursor.element && !cursor.element.staff.part.is(oldPart)) {
+							partCount2++;
+						    oldPart = cursor.element.staff.part;
+						}
+						//console.log('Part: ' + cursor.element.staff.part.is(cursor.element.staff.part));
+						console.log('Part Count: ' + partCount2);
+					}
+					                            
+                    
+                    
+                    
                     
                     // TEST: count notes
                     if (cursor.element && cursor.element.type == Element.CHORD) {
@@ -568,8 +621,9 @@ pitch   tpc name    tpc name    tpc name
                             
                         
                             // get part
-                            //console.log(cursor.element.staff.part.longName);
                             var part = cursor.element.staff.part.longName;
+                            
+                     
     
                             // TODO: print correct notename using tpc and pitch
                             // DONE                 
@@ -637,11 +691,24 @@ pitch   tpc name    tpc name    tpc name
         console.log('Measures: ' + internalMeasureNumber);
         //Qt.quit();
         
-        //helloQml.text = "QQQ";
-        helloQml1.text = 'Found ' + measureCount + ' measures.';
-        helloQml2.text = 'Found ' + noteCount + ' notes.';        
-        helloQml3.text = 'Found ' + staffCount + ' staves.';
-        helloQml4.text = 'Found ' + partCount + ' parts.';
+        
+        // List counts
+        if (curScore.selection.startSegment) {
+        	helloQml0.text = 'Selection';
+        	helloQml1.text = 'Found ' + measureCount2 + ' measures.';
+	        helloQml2.text = 'Found ' + noteCount + ' notes.'; // is OK       
+	        helloQml3.text = 'Found ' + staffCount2 + ' staves.';
+	        helloQml4.text = 'Found ' + partCount2 + ' parts.';
+        } else {
+        	helloQml0.text = 'Score';
+        	helloQml1.text = 'Found ' + measureCount + ' measures.';
+	        helloQml2.text = 'Found ' + noteCount + ' notes.';        
+	        helloQml3.text = 'Found ' + staffCount + ' staves.';
+	        helloQml4.text = 'Found ' + partCount + ' parts.';
+        }
+        
+       
+       
         
         // list notes
 //        helloQmlC.text =   '\t' + noteCountC   + '\t' + noteLengthC/480;
@@ -680,12 +747,39 @@ pitch   tpc name    tpc name    tpc name
         //color: "blue"
         //anchors.fill: parent
         //anchors.margins: 10
+        
+        Text {
+            id: helloQml0
+            //anchors.centerIn: parent
+            x: 20
+            y: 20
+            text: qsTr("Hello Qml")
+            font.bold: true
+        }
+        
+        Rectangle {
+            color: "grey"
+            //anchors.horizontalCenter: parent.horizontalCenter
+            height: 1
+            width: 660          
+            x: 20
+            y: 40
+        }
+        
+        Rectangle {
+            color: "white"
+            //anchors.horizontalCenter: parent.horizontalCenter
+            height: 1
+            width: 660          
+            x: 20
+            y: 41
+        }
 
         Text {
             id: helloQml1
             //anchors.centerIn: parent
             x: 20
-            y: 20
+            y: 50
             text: qsTr("Hello Qml")
         }
         
@@ -693,7 +787,7 @@ pitch   tpc name    tpc name    tpc name
             id: helloQml2
             //anchors.centerIn: parent
             x: 20
-            y: 40
+            y: 70
             text: qsTr("Hello Qml")
         }
         
@@ -701,7 +795,7 @@ pitch   tpc name    tpc name    tpc name
             id: helloQml3
             //anchors.centerIn: parent
             x: 20
-            y: 60
+            y: 90
             text: qsTr("Hello Qml")
         }
         
@@ -709,7 +803,7 @@ pitch   tpc name    tpc name    tpc name
             id: helloQml4
             //anchors.centerIn: parent
             x: 20
-            y: 80
+            y: 110
             text: qsTr("Hello Qml")
         }
         
