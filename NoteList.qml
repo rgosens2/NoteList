@@ -244,9 +244,15 @@ MuseScore {
             cursor.staffIdx = curScore.selection.endStaff;
             cursor.voice = 0;
             // Use measure map
-            var mend = measureMap[cursor.measure.firstSegment.tick];
-            
-            measureCount2 = (mend.no - mstart.no) + 1;
+            // SHIT: cursor.measure null when select All
+            // HACK:
+            if (toEOF) {
+            	measureCount2 = measureCount;
+            } else {
+            	var mend = measureMap[cursor.measure.firstSegment.tick];
+            	measureCount2 = (mend.no - mstart.no) + 1;
+            }
+                   
 
         }
         
