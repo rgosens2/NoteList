@@ -23,6 +23,18 @@ import MuseScore 3.0
 
 
 MuseScore {
+    // For MuseScore 4.0
+    id: some_id
+ 
+    Component.onCompleted : {
+        if (mscoreMajorVersion >= 4) {
+            some_id.title = qsTr("Note List (Light)") ;
+            //some_id.thumbnailName = "thumbnail.png";
+            //some_id.categoryCode = "some_category";
+        }
+    }
+
+    /////////////////
     menuPath: "Plugins.Note List (Light)"
     version: "4.0"
     description: qsTr("Show and save a note list of the score or a selection")
