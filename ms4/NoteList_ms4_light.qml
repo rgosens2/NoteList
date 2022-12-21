@@ -1018,7 +1018,8 @@ pitch   tpc name    tpc name    tpc name
             text: qsTranslate("PrefsDialogBase", "Done")
             onClicked: {
                 //pluginId.parent.Window.window.close();
-                Qt.quit()
+                //Qt.quit()
+                quit()
             }
         }
     }
