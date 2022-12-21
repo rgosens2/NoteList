@@ -5,7 +5,7 @@
 //
 //  Show and save a note list of the score or a selection
 //
-//  Version 2.1
+//  Version 2.2
 //
 //  Copyright (C) 2021 rgos
 //=============================================================================
