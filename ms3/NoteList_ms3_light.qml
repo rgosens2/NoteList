@@ -5,7 +5,7 @@
 //
 //  Show and save a note list of the score or a selection
 //
-//  Version 2.2
+//  Version 2.3
 //
 //  Copyright (C) 2021 rgos
 //=============================================================================
@@ -540,7 +540,7 @@ MuseScore {
                             }
 
                             var pitch = cursor.element.notes[i].pitch;
-                            var tpc   = cursor.element.notes[i].tpc;
+                            var tpc   = cursor.element.notes[i].tpc1; // use concert pitch always
 
                             var octave = Math.floor(pitch/12)-1;
                             var notename = '';
