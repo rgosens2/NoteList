@@ -206,7 +206,7 @@ MuseScore {
             if (!cursor.tick) {
                 /*
                  * This happens when the selection goes to the
-                 * end of the scorerewind() jumps behind the
+                 * end of the score - rewind() jumps behind the
                  * last segment, setting tick = 0.
                  */
                 toEOF = true;
